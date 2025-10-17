@@ -1,0 +1,287 @@
+{
+  "info": {
+    "name": "OPR BE API",
+    "_postman_id": "8e6b7e1e-7b4a-4a3f-9f2f-7b5c2d1a9a3f",
+    "description": "Postman collection for OPR Backend API. Uses {{url}} as the base URL. Login and refresh endpoints automatically store tokens in collection variables, and a collection-level pre-request script injects the Authorization header (Bearer {{accessToken}}) automatically on other requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/create_user",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "create_user"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"changeme123\",\n  \"name\": \"Jane Doe\",\n  \"role\": \"user\",\n  \"apps\": \"dashboard,analytics\",\n  \"is_authorized\": true,\n  \"is_active\": true,\n  \"is_admin\": false,\n  \"read_only\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "  const json = pm.response.json();",
+                  "  if (json && json.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', json.access_token);",
+                  "  }",
+                  "  if (json && json.refresh_token) {",
+                  "    pm.collectionVariables.set('refreshToken', json.refresh_token);",
+                  "  }",
+                  "  pm.test('Stored access and refresh tokens', function () {",
+                  "    pm.expect(pm.collectionVariables.get('accessToken')).to.be.a('string');",
+                  "    pm.expect(pm.collectionVariables.get('refreshToken')).to.be.a('string');",
+                  "  });",
+                  "} catch (e) {",
+                  "  console.warn('Token parsing failed', e);",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/login",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"changeme123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Ensure body has refresh_token from collection variable if not manually set",
+                  "if (!pm.request.body || pm.request.body.mode !== 'raw') { return; }",
+                  "let body;",
+                  "try { body = JSON.parse(pm.request.body.raw || '{}'); } catch(e) { body = {}; }",
+                  "if (!body.refresh_token) {",
+                  "  const rt = pm.collectionVariables.get('refreshToken');",
+                  "  if (rt) { body.refresh_token = rt; }",
+                  "}",
+                  "pm.request.body.update(JSON.stringify(body, null, 2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "  const json = pm.response.json();",
+                  "  if (json && json.access_token) { pm.collectionVariables.set('accessToken', json.access_token); }",
+                  "  if (json && json.refresh_token) { pm.collectionVariables.set('refreshToken', json.refresh_token); }",
+                  "  pm.test('Refreshed tokens stored', function () {",
+                  "    pm.expect(pm.collectionVariables.get('accessToken')).to.be.a('string');",
+                  "    pm.expect(pm.collectionVariables.get('refreshToken')).to.be.a('string');",
+                  "  });",
+                  "} catch (e) { console.warn('Token parsing failed', e); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/refresh_token",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "refresh_token"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/request_password_reset",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "request_password_reset"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/reset_password",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "reset_password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"new_password\": \"NewPass123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update User (self)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/update_user",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "update_user"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"updates\": {\n    \"name\": \"Jane D.\",\n    \"password\": \"newpass123\",\n    \"role\": \"user\",\n    \"apps\": \"dashboard,analytics\",\n    \"is_authorized\": true,\n    \"is_active\": true,\n    \"is_admin\": false,\n    \"read_only\": false\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User (self)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/authentication/delete_user",
+              "host": ["{{url}}"],
+              "path": ["v1", "authentication", "delete_user"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": null,\n  \"password\": null\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/v1/admin/users",
+              "host": ["{{url}}"],
+              "path": ["v1", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/v1/admin/users/{{adminEmail}}",
+              "host": ["{{url}}"],
+              "path": ["v1", "admin", "users", "{{adminEmail}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{url}}/v1/admin/users/{{adminEmail}}",
+              "host": ["{{url}}"],
+              "path": ["v1", "admin", "users", "{{adminEmail}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newpass123\",\n  \"name\": \"John Admin\",\n  \"role\": \"manager\",\n  \"apps\": \"dashboard,analytics\",\n  \"is_authorized\": true,\n  \"is_active\": true,\n  \"is_admin\": true,\n  \"read_only\": false,\n  \"new_email\": null,\n  \"add_apps\": [\"reports\"],\n  \"remove_apps\": [\"deprecated\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/v1/admin/users/{{adminEmail}}",
+              "host": ["{{url}}"],
+              "path": ["v1", "admin", "users", "{{adminEmail}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Inject Authorization header for all requests except login and refresh_token",
+          "const path = pm.request.url.getPath();",
+          "const skipAuth = path.endsWith('/authentication/login') || path.endsWith('/authentication/refresh_token');",
+          "if (!skipAuth) {",
+          "  const token = pm.collectionVariables.get('accessToken');",
+          "  if (token) {",
+          "    pm.request.headers.upsert({ key: 'Authorization', value: `Bearer ${token}` });",
+          "  }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "url", "value": "http://localhost:8000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "adminEmail", "value": "user@example.com" }
+  ]
+}
