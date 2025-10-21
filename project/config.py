@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         {
             'db': 'opr',
             'alias': 'opr_db',
-            'host': 'mongodb+srv://joao_db_user:vkyTwOUlfmMcqYsG@cluster0.54mx9a4.mongodb.net/opr?retryWrites=true&w=majority&appName=Cluster0'
+            'host': os.environ.get('MONGO_URI')
         }
     ]
 
