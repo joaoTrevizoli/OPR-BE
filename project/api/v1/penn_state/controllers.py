@@ -9,6 +9,7 @@ from project.api.models.penn_state import PennState
 from project.api.models.farm import Farm
 from project.api.models.user import User
 from .schemas import PennStateCreate, PennStateRead, PennStateUpdate
+from ...utils import get_doc_by_id, build_date_range_filter, apply_updates, get_accessible_farm_ids
 
 
 def _to_read(doc: PennState) -> PennStateRead:
@@ -39,6 +40,15 @@ async def create_entry(payload: PennStateCreate) -> PennStateRead:
     if not farm:
         raise HTTPException(status_code=400, detail="Invalid farm_id: farm not found")
 
+    # Prevent duplicate by (farm_id, date, diet)
+    existing = await PennState.find_one({
+        PennState.farm_id: payload.farm_id,
+        PennState.date: payload.date,
+        PennState.diet: payload.diet,
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="Entry already exists for this farm_id, date and diet")
+
     doc = PennState(
         date=payload.date,
         unit=payload.unit,
@@ -49,7 +59,12 @@ async def create_entry(payload: PennStateCreate) -> PennStateRead:
         pct_3_8mm=payload.pct_3_8mm,
         pct_fines=payload.pct_fines,
     )
-    await doc.insert()
+    try:
+        await doc.insert()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Entry already exists for this farm_id, date and diet")
+        raise
     return _to_read(doc)
 
 
@@ -66,20 +81,15 @@ async def list_entries(
         query[PennState.unit] = unit
     if diet:
         query[PennState.diet] = diet
-    if start_date or end_date:
-        range_q = {}
-        if start_date:
-            range_q["$gte"] = start_date
-        if end_date:
-            range_q["$lte"] = end_date
+    range_q = build_date_range_filter(start_date, end_date)
+    if range_q:
         query[PennState.date] = range_q
 
     if user.is_admin:
         if farm_id:
             query[PennState.farm_id] = farm_id
     else:
-        accessible_farms = await Farm.find({"$or": [{"owner_email": user.email}, {"shared_with": user.email}]}).to_list()
-        accessible_ids = {str(f.id) for f in accessible_farms if f.id is not None}
+        accessible_ids = await get_accessible_farm_ids(user)
         if farm_id:
             if farm_id not in accessible_ids:
                 return []
@@ -92,7 +102,8 @@ async def list_entries(
 
 
 async def get_entry(entry_id: str, user: User) -> PennStateRead:
-    doc = await PennState.get(entry_id)
+    doc = await get_doc_by_id(PennState, entry_id)
+
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     if not user.is_admin:
@@ -103,18 +114,33 @@ async def get_entry(entry_id: str, user: User) -> PennStateRead:
 
 
 async def update_entry(entry_id: str, updates: PennStateUpdate) -> PennStateRead:
-    doc = await PennState.get(entry_id)
+    doc = await get_doc_by_id(PennState, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     data = updates.model_dump(exclude_unset=True)
-    for k, v in data.items():
-        setattr(doc, k, v)
-    await doc.save()
+    apply_updates(doc, data)
+
+    # Check for uniqueness conflict with updated keys
+    conflict = await PennState.find_one({
+        PennState.farm_id: doc.farm_id,
+        PennState.date: doc.date,
+        PennState.diet: doc.diet,
+        "_id": {"$ne": doc.id},
+    })
+    if conflict:
+        raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id, date and diet")
+
+    try:
+        await doc.save()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id, date and diet")
+        raise
     return _to_read(doc)
 
 
 async def delete_entry(entry_id: str) -> dict:
-    doc = await PennState.get(entry_id)
+    doc = await get_doc_by_id(PennState, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     await doc.delete()

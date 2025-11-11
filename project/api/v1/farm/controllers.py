@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from project.api.models.farm import Farm
 from project.api.models.user import User
 from .schemas import FarmCreate, FarmRead, FarmUpdate
+from ...utils import get_doc_by_id
 
 
 def _normalize_emails(emails: Optional[List[str]]) -> List[str]:
@@ -20,6 +21,8 @@ async def create_farm(payload: FarmCreate, owner_email: str) -> FarmRead:
         name=payload.name,
         country=payload.country,
         state_province=payload.state_province,
+        city=getattr(payload, "city", None),
+        owner_name=getattr(payload, "owner_name", None),
         notes=payload.notes,
         lat_long=payload.lat_long,  # already coerced by schema
         owner_email=owner_email,
@@ -41,10 +44,7 @@ async def list_farms_for_user(user_email: str, is_admin: bool = False) -> List[F
 
 
 async def get_farm(entry_id: str, user_email: str, is_admin: bool = False) -> FarmRead:
-    try:
-        doc = await Farm.get(entry_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid farm_id format")
+    doc = await get_doc_by_id(Farm, entry_id, error_detail="Invalid farm_id format")
     if not doc:
         raise HTTPException(status_code=404, detail="Farm not found")
     if not is_admin and user_email != doc.owner_email and user_email not in (doc.shared_with or []):
@@ -53,10 +53,7 @@ async def get_farm(entry_id: str, user_email: str, is_admin: bool = False) -> Fa
 
 
 async def update_farm(entry_id: str, user_email: str, updates: FarmUpdate) -> FarmRead:
-    try:
-        doc = await Farm.get(entry_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid farm_id format")
+    doc = await get_doc_by_id(Farm, entry_id, error_detail="Invalid farm_id format")
     if not doc:
         raise HTTPException(status_code=404, detail="Farm not found")
     if user_email != doc.owner_email:
@@ -75,10 +72,7 @@ from project.api.models.penn_state import PennState
 
 
 async def delete_farm(entry_id: str, user_email: str) -> dict:
-    try:
-        doc = await Farm.get(entry_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid farm_id format")
+    doc = await get_doc_by_id(Farm, entry_id, error_detail="Invalid farm_id format")
     if not doc:
         raise HTTPException(status_code=404, detail="Farm not found")
     if user_email != doc.owner_email:
@@ -109,10 +103,7 @@ async def delete_farm(entry_id: str, user_email: str) -> dict:
 
 
 async def share_farm(entry_id: str, owner_email: str, add: Optional[List[str]], remove: Optional[List[str]]) -> FarmRead:
-    try:
-        doc = await Farm.get(entry_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid farm_id format")
+    doc = await get_doc_by_id(Farm, entry_id, error_detail="Invalid farm_id format")
     if not doc:
         raise HTTPException(status_code=404, detail="Farm not found")
     if owner_email != doc.owner_email:

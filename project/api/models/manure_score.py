@@ -29,6 +29,14 @@ class ManureScore(Document):
 
     class Settings:
         name = "manure_score"
+        indexes = [
+            # Enforce uniqueness by (farm_id, date, diet)
+            __import__("pymongo").IndexModel(
+                [("farm_id", __import__("pymongo").ASCENDING), ("date", __import__("pymongo").ASCENDING), ("diet", __import__("pymongo").ASCENDING)],
+                unique=True,
+                name="uniq_farm_date_diet",
+            )
+        ]
 
     model_config = ConfigDict(
         json_schema_extra={

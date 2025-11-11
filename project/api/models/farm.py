@@ -17,6 +17,8 @@ class Farm(Document):
     name: str = Field(..., description="Farm name")
     country: str = Field(..., description="Country")
     state_province: str = Field(..., description="State or province")
+    city: Optional[str] = Field(default=None, description="City where the farm is located")
+    owner_name: Optional[str] = Field(default=None, description="Owner full name")
     owner_email: str = Field(..., description="Email of the owner user")
     notes: Optional[str] = Field(default=None, description="Additional notes")
     lat_long: Optional[Dict[str, Any]] = Field(
@@ -34,6 +36,8 @@ class Farm(Document):
                 "name": "Green Valley",
                 "country": "Brazil",
                 "state_province": "SP",
+                "city": "Ribeirão Preto",
+                "owner_name": "John Doe",
                 "owner_email": "owner@example.com",
                 "notes": "Irrigated fields",
                 "lat_long": {"type": "Point", "coordinates": [-47.12345, -22.12345]},

@@ -9,6 +9,7 @@ from project.api.models.manure_score import ManureScore
 from project.api.models.farm import Farm
 from project.api.models.user import User
 from .schemas import ManureScoreCreate, ManureScoreRead, ManureScoreUpdate
+from ...utils import get_doc_by_id, build_date_range_filter, apply_updates, get_accessible_farm_ids
 
 
 def _compute_total(payload: ManureScoreCreate | ManureScoreUpdate | ManureScore) -> int:
@@ -56,6 +57,16 @@ async def create_entry(payload: ManureScoreCreate) -> ManureScoreRead:
         raise HTTPException(status_code=400, detail="Invalid farm_id format")
     if not farm:
         raise HTTPException(status_code=400, detail="Invalid farm_id: farm not found")
+
+    # Prevent duplicate by (farm_id, date, diet)
+    existing = await ManureScore.find_one({
+        ManureScore.farm_id: payload.farm_id,
+        ManureScore.date: payload.date,
+        ManureScore.diet: payload.diet,
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="Entry already exists for this farm_id, date and diet")
+
     total = _compute_total(payload)
     doc = ManureScore(
         date=payload.date,
@@ -69,7 +80,12 @@ async def create_entry(payload: ManureScoreCreate) -> ManureScoreRead:
         score_4=payload.score_4,
         total=total,
     )
-    await doc.insert()
+    try:
+        await doc.insert()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Entry already exists for this farm_id, date and diet")
+        raise
     return _to_read(doc)
 
 
@@ -86,20 +102,15 @@ async def list_entries(
         query[ManureScore.unit] = unit
     if diet:
         query[ManureScore.diet] = diet
-    if start_date or end_date:
-        range_q = {}
-        if start_date:
-            range_q["$gte"] = start_date
-        if end_date:
-            range_q["$lte"] = end_date
+    range_q = build_date_range_filter(start_date, end_date)
+    if range_q:
         query[ManureScore.date] = range_q
 
     if user.is_admin:
         if farm_id:
             query[ManureScore.farm_id] = farm_id
     else:
-        accessible_farms = await Farm.find({"$or": [{"owner_email": user.email}, {"shared_with": user.email}]}).to_list()
-        accessible_ids = {str(f.id) for f in accessible_farms if f.id is not None}
+        accessible_ids = await get_accessible_farm_ids(user)
         if farm_id:
             if farm_id not in accessible_ids:
                 return []
@@ -112,7 +123,7 @@ async def list_entries(
 
 
 async def get_entry(entry_id: str, user: User) -> ManureScoreRead:
-    doc = await ManureScore.get(entry_id)
+    doc = await get_doc_by_id(ManureScore, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     if not user.is_admin:
@@ -123,19 +134,34 @@ async def get_entry(entry_id: str, user: User) -> ManureScoreRead:
 
 
 async def update_entry(entry_id: str, updates: ManureScoreUpdate) -> ManureScoreRead:
-    doc = await ManureScore.get(entry_id)
+    doc = await get_doc_by_id(ManureScore, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     data = updates.model_dump(exclude_unset=True)
-    for k, v in data.items():
-        setattr(doc, k, v)
+    apply_updates(doc, data)
+
+    # Check for uniqueness conflict with updated keys
+    conflict = await ManureScore.find_one({
+        ManureScore.farm_id: doc.farm_id,
+        ManureScore.date: doc.date,
+        ManureScore.diet: doc.diet,
+        "_id": {"$ne": doc.id},
+    })
+    if conflict:
+        raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id, date and diet")
+
     doc.total = _compute_total(doc)
-    await doc.save()
+    try:
+        await doc.save()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id, date and diet")
+        raise
     return _to_read(doc)
 
 
 async def delete_entry(entry_id: str) -> dict:
-    doc = await ManureScore.get(entry_id)
+    doc = await get_doc_by_id(ManureScore, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     await doc.delete()

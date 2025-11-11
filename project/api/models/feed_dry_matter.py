@@ -27,6 +27,13 @@ class FeedDryMatter(Document):
 
     class Settings:
         name = "feed_dry_matter"
+        indexes = [
+            __import__("pymongo").IndexModel(
+                [("farm_id", __import__("pymongo").ASCENDING), ("date", __import__("pymongo").ASCENDING)],
+                unique=True,
+                name="uniq_farm_date",
+            )
+        ]
 
     model_config = ConfigDict(
         json_schema_extra={

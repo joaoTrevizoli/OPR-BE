@@ -9,6 +9,7 @@ from project.api.models.feed_dry_matter import FeedDryMatter
 from project.api.models.farm import Farm
 from project.api.models.user import User
 from .schemas import FeedDryMatterCreate, FeedDryMatterRead, FeedDryMatterUpdate
+from ...utils import get_doc_by_id, build_date_range_filter, apply_updates, get_accessible_farm_ids
 
 
 async def create_entry(payload: FeedDryMatterCreate) -> FeedDryMatterRead:
@@ -19,8 +20,21 @@ async def create_entry(payload: FeedDryMatterCreate) -> FeedDryMatterRead:
         raise HTTPException(status_code=400, detail="Invalid farm_id format")
     if not farm:
         raise HTTPException(status_code=400, detail="Invalid farm_id: farm not found")
+    # Prevent duplicate by (farm_id, date)
+    existing = await FeedDryMatter.find_one({
+        FeedDryMatter.farm_id: payload.farm_id,
+        FeedDryMatter.date: payload.date,
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="Entry already exists for this farm_id and date")
+
     doc = FeedDryMatter(**payload.dict())
-    await doc.insert()
+    try:
+        await doc.insert()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Entry already exists for this farm_id and date")
+        raise
     return FeedDryMatterRead(**doc.model_dump(mode="json"))
 
 
@@ -29,12 +43,8 @@ async def list_entries(user: User, unit: Optional[str] = None, start_date: Optio
     if unit:
         query[FeedDryMatter.unit] = unit
     # Date range filter
-    if start_date or end_date:
-        range_q = {}
-        if start_date:
-            range_q["$gte"] = start_date
-        if end_date:
-            range_q["$lte"] = end_date
+    range_q = build_date_range_filter(start_date, end_date)
+    if range_q:
         query[FeedDryMatter.date] = range_q
 
     if user.is_admin:
@@ -43,8 +53,7 @@ async def list_entries(user: User, unit: Optional[str] = None, start_date: Optio
             query[FeedDryMatter.farm_id] = farm_id
     else:
         # Restrict to farms the user owns or is shared with
-        accessible_farms = await Farm.find({"$or": [{"owner_email": user.email}, {"shared_with": user.email}]}).to_list()
-        accessible_ids = {str(f.id) for f in accessible_farms if f.id is not None}
+        accessible_ids = await get_accessible_farm_ids(user)
         if farm_id:
             # Intersect requested farm with accessible set
             if farm_id not in accessible_ids:
@@ -58,7 +67,7 @@ async def list_entries(user: User, unit: Optional[str] = None, start_date: Optio
 
 
 async def get_entry(entry_id: str, user: User) -> FeedDryMatterRead:
-    doc = await FeedDryMatter.get(entry_id)
+    doc = await get_doc_by_id(FeedDryMatter, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     if not user.is_admin:
@@ -69,18 +78,32 @@ async def get_entry(entry_id: str, user: User) -> FeedDryMatterRead:
 
 
 async def update_entry(entry_id: str, updates: FeedDryMatterUpdate) -> FeedDryMatterRead:
-    doc = await FeedDryMatter.get(entry_id)
+    doc = await get_doc_by_id(FeedDryMatter, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     data = updates.model_dump(exclude_unset=True)
-    for k, v in data.items():
-        setattr(doc, k, v)
-    await doc.save()
+    apply_updates(doc, data)
+
+    # Check for uniqueness conflict with updated keys (farm_id, date)
+    conflict = await FeedDryMatter.find_one({
+        FeedDryMatter.farm_id: doc.farm_id,
+        FeedDryMatter.date: doc.date,
+        "_id": {"$ne": doc.id},
+    })
+    if conflict:
+        raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id and date")
+
+    try:
+        await doc.save()
+    except Exception as e:
+        if e.__class__.__name__ == "DuplicateKeyError":
+            raise HTTPException(status_code=409, detail="Another entry already exists for this farm_id and date")
+        raise
     return FeedDryMatterRead(**doc.model_dump(mode="json"))
 
 
 async def delete_entry(entry_id: str) -> dict:
-    doc = await FeedDryMatter.get(entry_id)
+    doc = await get_doc_by_id(FeedDryMatter, entry_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Entry not found")
     await doc.delete()

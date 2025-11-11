@@ -28,6 +28,8 @@ class FarmBase(BaseModel):
     name: str = Field(..., description="Farm name")
     country: str = Field(..., description="Country")
     state_province: str = Field(..., description="State or province")
+    city: Optional[str] = Field(default=None, description="City where the farm is located")
+    owner_name: Optional[str] = Field(default=None, description="Owner full name")
     notes: Optional[str] = Field(default=None, description="Notes")
     lat_long: Optional[Dict[str, Any] | Tuple[float, float] | List[float] | str | LatLong] = Field(
         default=None, description="GeoJSON Point or coercible input: 'lat,lon', [lat, lon], {lat, lon}"
@@ -75,6 +77,8 @@ class FarmUpdate(BaseModel):
     name: Optional[str] = None
     country: Optional[str] = None
     state_province: Optional[str] = None
+    city: Optional[str] = None
+    owner_name: Optional[str] = None
     notes: Optional[str] = None
     lat_long: Optional[Dict[str, Any] | Tuple[float, float] | List[float] | str | LatLong] = None
 
