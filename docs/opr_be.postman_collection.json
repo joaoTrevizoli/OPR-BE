@@ -281,7 +281,7 @@
             "url": { "raw": "{{url}}/v1/farm/", "host": ["{{url}}"], "path": ["v1", "farm", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sample Farm\",\n  \"country\": \"Brazil\",\n  \"state_province\": \"SP\",\n  \"notes\": \"Demo farm created via Postman\",\n  \"lat_long\": { \"type\": \"Point\", \"coordinates\": [-48, -21] }\n}"
+              "raw": "{\n  \"name\": \"Sample Farm\",\n  \"country\": \"Brazil\",\n  \"state_province\": \"SP\",\n  \"city\": \"Ribeirao Preto\",\n  \"owner_name\": \"John Doe\",\n  \"notes\": \"Demo farm created via Postman\",\n  \"lat_long\": { \"type\": \"Point\", \"coordinates\": [-48, -21] }\n}"
             }
           }
         },
@@ -299,7 +299,7 @@
             "method": "PUT",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{url}}/v1/farm/{{farmId}}", "host": ["{{url}}"], "path": ["v1", "farm", "{{farmId}}"] },
-            "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Updated notes\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"city\": \"Barretos\",\n  \"owner_name\": \"Jane Owner\",\n  \"notes\": \"Updated notes\"\n}" }
           }
         },
         {
@@ -520,6 +520,310 @@
         }
       ]
     }
+    ,
+    {
+      "name": "Trough Score",
+      "item": [
+        {
+          "name": "Create Trough Score",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('troughScoreId', json.id); } } catch(e) {}",
+                  "pm.test('Stored troughScoreId', function () { pm.expect(pm.collectionVariables.get('troughScoreId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/trough-score/", "host": ["{{url}}"], "path": ["v1", "trough-score", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-10-11\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"score_1\": 6,\n  \"score_2\": 8,\n  \"score_3\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "List Trough Scores (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/trough-score?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "trough-score"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Trough Score by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/trough-score/{{troughScoreId}}", "host": ["{{url}}"], "path": ["v1", "trough-score", "{{troughScoreId}}"] } }
+        },
+        {
+          "name": "Update Trough Score",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/trough-score/{{troughScoreId}}", "host": ["{{url}}"], "path": ["v1", "trough-score", "{{troughScoreId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"score_1\": 7\n}" }
+          }
+        },
+        {
+          "name": "Delete Trough Score",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/trough-score/{{troughScoreId}}", "host": ["{{url}}"], "path": ["v1", "trough-score", "{{troughScoreId}}"] } }
+        }
+      ]
+    }
+    ,
+    {
+      "name": "Penn State Diet",
+      "item": [
+        {
+          "name": "Create Penn State Diet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('pennStateDietId', json.id); } } catch(e) {}",
+                  "pm.test('Stored pennStateDietId', function () { pm.expect(pm.collectionVariables.get('pennStateDietId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/penn-state-diet/", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-10-22\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"pct_19mm\": 12.7,\n  \"pct_8mm\": 26.3,\n  \"pct_1_18mm\": 3.5,\n  \"fdn_bromate_pct\": 57.7\n}"
+            }
+          }
+        },
+        {
+          "name": "List Penn State Diet (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state-diet?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-diet"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Penn State Diet by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state-diet/{{pennStateDietId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", "{{pennStateDietId}}"] } }
+        },
+        {
+          "name": "Update Penn State Diet",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/penn-state-diet/{{pennStateDietId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", "{{pennStateDietId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pct_1_18mm\": 4.0\n}" }
+          }
+        },
+        {
+          "name": "Delete Penn State Diet",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/penn-state-diet/{{pennStateDietId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", "{{pennStateDietId}}"] } }
+        }
+      ]
+    }
+    ,
+    {
+      "name": "Environment",
+      "item": [
+        {
+          "name": "Create Environment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('environmentId', json.id); } } catch(e) {}",
+                  "pm.test('Stored environmentId', function () { pm.expect(pm.collectionVariables.get('environmentId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/environment/", "host": ["{{url}}"], "path": ["v1", "environment", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-11-05\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"rainfall_mm\": 0,\n  \"temperature_noon_c\": 32,\n  \"relative_humidity_pct\": 61\n}"
+            }
+          }
+        },
+        {
+          "name": "List Environment (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/environment?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "environment"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Environment by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/environment/{{environmentId}}", "host": ["{{url}}"], "path": ["v1", "environment", "{{environmentId}}"] } }
+        },
+        {
+          "name": "Update Environment",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/environment/{{environmentId}}", "host": ["{{url}}"], "path": ["v1", "environment", "{{environmentId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"relative_humidity_pct\": 60\n}" }
+          }
+        },
+        {
+          "name": "Delete Environment",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/environment/{{environmentId}}", "host": ["{{url}}"], "path": ["v1", "environment", "{{environmentId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "Scale",
+      "item": [
+        {
+          "name": "Create Scale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('scaleId', json.id); } } catch(e) {}",
+                  "pm.test('Stored scaleId', function () { pm.expect(pm.collectionVariables.get('scaleId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/scale/", "host": ["{{url}}"], "path": ["v1", "scale", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-10-11\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"equipment\": \"Truck 23\",\n  \"loaded_weight\": 5945,\n  \"delivered_weight\": 5890,\n  \"gross_weight\": 22650,\n  \"tare_weight\": 16810,\n  \"notes\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Scale (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/scale?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "scale"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Scale by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/scale/{{scaleId}}", "host": ["{{url}}"], "path": ["v1", "scale", "{{scaleId}}"] } }
+        },
+        {
+          "name": "Update Scale",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/scale/{{scaleId}}", "host": ["{{url}}"], "path": ["v1", "scale", "{{scaleId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"loaded_weight\": 6000\n}" }
+          }
+        },
+        {
+          "name": "Delete Scale",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/scale/{{scaleId}}", "host": ["{{url}}"], "path": ["v1", "scale", "{{scaleId}}"] } }
+        }
+      ]
+    }
+    ,
+    {
+      "name": "Factory",
+      "item": [
+        {
+          "name": "Create Factory",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('factoryId', json.id); } } catch(e) {}",
+                  "pm.test('Stored factoryId', function () { pm.expect(pm.collectionVariables.get('factoryId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/factory/", "host": ["{{url}}"], "path": ["v1", "factory", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-10-12\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"manufacturing_adaptation\": 33380,\n  \"manufacturing_growth\": 52530,\n  \"manufacturing_termination\": 124245,\n  \"planned_manufacturing_total\": 208177,\n  \"supply_adaptation\": 34027,\n  \"supply_growth\": 53340,\n  \"supply_termination\": 125320,\n  \"planned_supply_total\": 208465,\n  \"day_reading\": true,\n  \"night_reading\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "List Factory (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/factory?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "factory"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Factory by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/factory/{{factoryId}}", "host": ["{{url}}"], "path": ["v1", "factory", "{{factoryId}}"] } }
+        },
+        {
+          "name": "Update Factory",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/factory/{{factoryId}}", "host": ["{{url}}"], "path": ["v1", "factory", "{{factoryId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"planned_supply_total\": 208650\n}" }
+          }
+        },
+        {
+          "name": "Delete Factory",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/factory/{{factoryId}}", "host": ["{{url}}"], "path": ["v1", "factory", "{{factoryId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "Storage Inspection",
+      "item": [
+        {
+          "name": "Create Storage Inspection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('storageInspectionId', json.id); } } catch(e) {}",
+                  "pm.test('Stored storageInspectionId', function () { pm.expect(pm.collectionVariables.get('storageInspectionId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/storage-inspection/", "host": ["{{url}}"], "path": ["v1", "storage-inspection", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-08-10\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"ingredient\": \"Cottonseed meal\",\n  \"storage_location\": \"Trench\",\n  \"holes\": false,\n  \"displaced_pieces\": 5,\n  \"in_use\": false,\n  \"closing_date\": \"2025-01-01\",\n  \"tarp_face_correct\": true,\n  \"identified\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "List Storage Inspections (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/storage-inspection?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "storage-inspection"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Storage Inspection by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/storage-inspection/{{storageInspectionId}}", "host": ["{{url}}"], "path": ["v1", "storage-inspection", "{{storageInspectionId}}"] } }
+        },
+        {
+          "name": "Update Storage Inspection",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/storage-inspection/{{storageInspectionId}}", "host": ["{{url}}"], "path": ["v1", "storage-inspection", "{{storageInspectionId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"holes\": true\n}" }
+          }
+        },
+        {
+          "name": "Delete Storage Inspection",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/storage-inspection/{{storageInspectionId}}", "host": ["{{url}}"], "path": ["v1", "storage-inspection", "{{storageInspectionId}}"] } }
+        }
+      ]
+    }
   ],
   "event": [
     {
@@ -544,6 +848,9 @@
     { "key": "url", "value": "http://localhost:8000" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
-    { "key": "adminEmail", "value": "user@example.com" }
+    { "key": "adminEmail", "value": "user@example.com" },
+    { "key": "factoryId", "value": "" },
+    { "key": "troughScoreId", "value": "" },
+    { "key": "storageInspectionId", "value": "" }
   ]
 }
