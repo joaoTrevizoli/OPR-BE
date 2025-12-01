@@ -12,11 +12,30 @@ from .schemas import PennStateDietCreate, PennStateDietRead, PennStateDietUpdate
 from ...utils import get_doc_by_id, build_date_range_filter, apply_updates, get_accessible_farm_ids
 
 
+def _sum4(a: int | None, b: int | None, c: int | None, d: int | None) -> int:
+    return int(a or 0) + int(b or 0) + int(c or 0) + int(d or 0)
+
+
+def _pct(part: int | None, total: int) -> float:
+    try:
+        p = float(part or 0)
+        t = float(total or 0)
+        if t == 0:
+            return 0.0
+        return 100.0 * (p / t)
+    except Exception:
+        return 0.0
+
+
 def _recompute(doc: PennStateDiet) -> None:
-    p19 = float(doc.pct_19mm or 0.0)
-    p8 = float(doc.pct_8mm or 0.0)
-    p118 = float(doc.pct_1_18mm or 0.0)
-    eff = p19 + p8 + (p118 / 2.0)
+    total = _sum4(doc.count_19mm, doc.count_8mm, doc.count_1_18mm, doc.count_bottom)
+    doc.total_count = total
+    doc.pct_19mm = _pct(doc.count_19mm, total)
+    doc.pct_8mm = _pct(doc.count_8mm, total)
+    doc.pct_1_18mm = _pct(doc.count_1_18mm, total)
+    doc.pct_bottom = _pct(doc.count_bottom, total)
+
+    eff = float(doc.pct_19mm) + float(doc.pct_8mm) + (float(doc.pct_1_18mm) / 2.0)
     doc.effectiveness_factor_pct = eff
     fdn = float(doc.fdn_bromate_pct or 0.0)
     doc.fdnef_pct = fdn * (eff / 100.0)
