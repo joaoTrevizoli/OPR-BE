@@ -12,6 +12,7 @@ from project.api.v1.environment import environment
 from project.api.v1.factory import factory
 from project.api.v1.trough_score import trough_score
 from project.api.v1.storage_inspection import storage_inspection
+from project.api.v1.granulometry import granulometry
 from project.config import settings
 from project.db import initiate_database, close_db_connect
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +32,7 @@ def register_blueprint(app: FastAPI):
     app.include_router(factory.router)
     app.include_router(trough_score.router)
     app.include_router(storage_inspection.router)
+    app.include_router(granulometry.router)
 
 
 def create_app() -> FastAPI:

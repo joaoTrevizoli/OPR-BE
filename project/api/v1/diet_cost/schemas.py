@@ -15,8 +15,6 @@ class DietCostBase(BaseModel):
     cost_mn_per_ton: Optional[float] = Field(default=None, ge=0)
     cost_ms_per_ton: Optional[float] = Field(default=None, ge=0)
     time_in_diet_days: Optional[int] = Field(default=None, ge=0)
-    cost_mn_per_phase: Optional[float] = Field(default=None, ge=0)
-    cost_ms_per_phase: Optional[float] = Field(default=None, ge=0)
 
     @staticmethod
     def _coerce_float(v):
@@ -30,7 +28,7 @@ class DietCostBase(BaseModel):
         except Exception:
             return None
 
-    @field_validator("cost_mn_per_ton", "cost_ms_per_ton", "cost_mn_per_phase", "cost_ms_per_phase", mode="before")
+    @field_validator("cost_mn_per_ton", "cost_ms_per_ton", mode="before")
     @classmethod
     def float_ok(cls, v):
         return cls._coerce_float(v)
@@ -55,10 +53,8 @@ class DietCostUpdate(BaseModel):
     cost_mn_per_ton: Optional[float] = Field(default=None, ge=0)
     cost_ms_per_ton: Optional[float] = Field(default=None, ge=0)
     time_in_diet_days: Optional[int] = Field(default=None, ge=0)
-    cost_mn_per_phase: Optional[float] = Field(default=None, ge=0)
-    cost_ms_per_phase: Optional[float] = Field(default=None, ge=0)
 
-    @field_validator("cost_mn_per_ton", "cost_ms_per_ton", "cost_mn_per_phase", "cost_ms_per_phase", mode="before")
+    @field_validator("cost_mn_per_ton", "cost_ms_per_ton", mode="before")
     @classmethod
     def float_ok(cls, v):
         return DietCostBase._coerce_float(v)
@@ -76,6 +72,8 @@ class DietCostUpdate(BaseModel):
 
 class DietCostRead(DietCostBase):
     id: Optional[str] = Field(default=None)
+    cost_mn_per_phase: Optional[float] = Field(default=None, ge=0)
+    cost_ms_per_phase: Optional[float] = Field(default=None, ge=0)
 
 
 class DietCostList(BaseModel):

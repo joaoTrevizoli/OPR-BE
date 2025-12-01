@@ -4,7 +4,7 @@ import datetime as dt
 from typing import Optional
 
 from beanie import Document
-from pydantic import Field, ConfigDict, field_serializer
+from pydantic import Field, ConfigDict, field_serializer, field_validator
 
 
 class DietCost(Document):
@@ -21,8 +21,8 @@ class DietCost(Document):
     cost_mn_per_ton: Optional[float] = Field(default=None, ge=0, description="CUSTO MN R$/ton")
     cost_ms_per_ton: Optional[float] = Field(default=None, ge=0, description="CUSTO MS R$/ton")
     time_in_diet_days: Optional[int] = Field(default=None, ge=0, description="Tempo na dieta (dias)")
-    cost_mn_per_phase: Optional[float] = Field(default=None, ge=0, description="Custo MN R$/fase")
-    cost_ms_per_phase: Optional[float] = Field(default=None, ge=0, description="Custo MS R$/fase")
+    cost_mn_per_phase: Optional[float] = Field(default=None, ge=0, description="Custo MN R$/fase (computed)")
+    cost_ms_per_phase: Optional[float] = Field(default=None, ge=0, description="Custo MS R$/fase (computed)")
 
     class Settings:
         name = "diet_cost"
@@ -45,6 +45,7 @@ class DietCost(Document):
                 "cost_mn_per_ton": 620.0,
                 "cost_ms_per_ton": 1089.0,
                 "time_in_diet_days": 16,
+                # Computed = cost_per_ton * time_in_diet_days
                 "cost_mn_per_phase": 9920.0,
                 "cost_ms_per_phase": 17424.0,
             }
@@ -54,3 +55,25 @@ class DietCost(Document):
     @field_serializer("id", when_used="json")
     def serialize_id(self, v):
         return str(v) if v is not None else None
+
+    # --- computed fields validators ---
+    @staticmethod
+    def _compute_phase(cost_per_ton: Optional[float], days: Optional[int]) -> float:
+        try:
+            c = float(cost_per_ton or 0.0)
+            d = float(days or 0)
+            return float(c * d)
+        except Exception:
+            return 0.0
+
+    @field_validator("cost_mn_per_phase", mode="before")
+    @classmethod
+    def _ensure_mn_phase(cls, v, info):
+        d = info.data
+        return cls._compute_phase(d.get("cost_mn_per_ton"), d.get("time_in_diet_days"))
+
+    @field_validator("cost_ms_per_phase", mode="before")
+    @classmethod
+    def _ensure_ms_phase(cls, v, info):
+        d = info.data
+        return cls._compute_phase(d.get("cost_ms_per_ton"), d.get("time_in_diet_days"))

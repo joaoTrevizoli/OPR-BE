@@ -10,5 +10,6 @@ from project.api.models.environment import Environment
 from project.api.models.factory import Factory
 from project.api.models.trough_score import TroughScore
 from project.api.models.storage_inspection import StorageInspection
+from project.api.models.granulometry import Granulometry
 
-cocccidiosis_models = [User, FeedDryMatter, Farm, ManureScore, DietCost, PennStateDiet, PennStateForage, Scale, Environment, Factory, TroughScore, StorageInspection]
+cocccidiosis_models = [User, FeedDryMatter, Farm, ManureScore, DietCost, PennStateDiet, PennStateForage, Scale, Environment, Factory, TroughScore, StorageInspection, Granulometry]

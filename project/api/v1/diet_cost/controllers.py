@@ -11,6 +11,23 @@ from project.api.models.user import User
 from .schemas import DietCostCreate, DietCostRead, DietCostUpdate
 from ...utils import get_doc_by_id, build_date_range_filter, apply_updates, get_accessible_farm_ids
 
+def _recompute(doc: DietCost) -> None:
+    try:
+        days = float(doc.time_in_diet_days or 0)
+    except Exception:
+        days = 0.0
+    try:
+        cmn = float(doc.cost_mn_per_ton or 0.0)
+    except Exception:
+        cmn = 0.0
+    try:
+        cms = float(doc.cost_ms_per_ton or 0.0)
+    except Exception:
+        cms = 0.0
+    # As requested: cost per phase = cost per ton × time in diet (days)
+    doc.cost_mn_per_phase = float(cmn * days)
+    doc.cost_ms_per_phase = float(cms * days)
+
 
 async def create_entry(payload: DietCostCreate) -> DietCostRead:
     # Validate farm existence with graceful handling of invalid IDs
@@ -38,9 +55,8 @@ async def create_entry(payload: DietCostCreate) -> DietCostRead:
         cost_mn_per_ton=payload.cost_mn_per_ton,
         cost_ms_per_ton=payload.cost_ms_per_ton,
         time_in_diet_days=payload.time_in_diet_days,
-        cost_mn_per_phase=payload.cost_mn_per_phase,
-        cost_ms_per_phase=payload.cost_ms_per_phase,
     )
+    _recompute(doc)
     try:
         await doc.insert()
     except Exception as e:
@@ -101,6 +117,7 @@ async def update_entry(entry_id: str, updates: DietCostUpdate) -> DietCostRead:
         raise HTTPException(status_code=404, detail="Entry not found")
     data = updates.model_dump(exclude_unset=True)
     apply_updates(doc, data)
+    _recompute(doc)
 
     # Check for uniqueness conflict with updated keys
     conflict = await DietCost.find_one({

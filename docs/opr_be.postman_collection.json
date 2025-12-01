@@ -443,7 +443,7 @@
             "url": { "raw": "{{url}}/v1/diet-cost/", "host": ["{{url}}"], "path": ["v1", "diet-cost", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-08-11\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"cost_mn_per_ton\": 620,\n  \"cost_ms_per_ton\": 1089,\n  \"time_in_diet_days\": 16,\n  \"cost_mn_per_phase\": 9920,\n  \"cost_ms_per_phase\": 17424\n}"
+              "raw": "{\n  \"date\": \"2024-08-11\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"cost_mn_per_ton\": 620,\n  \"cost_ms_per_ton\": 1089,\n  \"time_in_diet_days\": 16\n}"
             }
           }
         },
@@ -747,7 +747,7 @@
             "url": { "raw": "{{url}}/v1/factory/", "host": ["{{url}}"], "path": ["v1", "factory", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-10-12\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"manufacturing_adaptation\": 33380,\n  \"manufacturing_growth\": 52530,\n  \"manufacturing_termination\": 124245,\n  \"planned_manufacturing_total\": 208177,\n  \"supply_adaptation\": 34027,\n  \"supply_growth\": 53340,\n  \"supply_termination\": 125320,\n  \"planned_supply_total\": 208465,\n  \"day_reading\": true,\n  \"night_reading\": true\n}"
+              "raw": "{\n  \"date\": \"2024-10-12\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"manufacturing_adaptation\": 28554,\n  \"manufacturing_growth\": 50865,\n  \"manufacturing_termination\": 123315,\n  \"planned_manufacturing_total\": 200890,\n  \"supply_adaptation\": 29810,\n  \"supply_growth\": 51315,\n  \"supply_termination\": 124258,\n  \"planned_supply_total\": 202650,\n  \"day_reading\": true,\n  \"night_reading\": true\n}"
             }
           }
         },
@@ -824,6 +824,57 @@
         }
       ]
     }
+    ,
+    {
+      "name": "Granulometry",
+      "item": [
+        {
+          "name": "Create Granulometry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('granulometryId', json.id); } } catch(e) {}",
+                  "pm.test('Stored granulometryId', function () { pm.expect(pm.collectionVariables.get('granulometryId')).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/granulometry/", "host": ["{{url}}"], "path": ["v1", "granulometry", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-10-15\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"sample\": \"CORN MEAL\",\n  \"count_6mm\": 0,\n  \"count_3_25mm\": 20,\n  \"count_2mm\": 118,\n  \"count_1_25mm\": 140,\n  \"count_bottom\": 17,\n  \"whole_grain_total\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "List Granulometry (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/granulometry?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "granulometry"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+        },
+        {
+          "name": "Get Granulometry by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/granulometry/{{granulometryId}}", "host": ["{{url}}"], "path": ["v1", "granulometry", "{{granulometryId}}"] } }
+        },
+        {
+          "name": "Update Granulometry",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{url}}/v1/granulometry/{{granulometryId}}", "host": ["{{url}}"], "path": ["v1", "granulometry", "{{granulometryId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"unit\": \"CAUA\",\n  \"sample\": \"CORN MEAL\",\n  \"count_6mm\": 0,\n  \"count_3_25mm\": 19,\n  \"count_2mm\": 127,\n  \"count_1_25mm\": 119,\n  \"count_bottom\": 25,\n  \"whole_grain_total\": 0\n}" }
+          }
+        },
+        {
+          "name": "Delete Granulometry",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/granulometry/{{granulometryId}}", "host": ["{{url}}"], "path": ["v1", "granulometry", "{{granulometryId}}"] } }
+        }
+      ]
+    }
   ],
   "event": [
     {
@@ -852,6 +903,7 @@
     { "key": "factoryId", "value": "" },
     { "key": "troughScoreId", "value": "" },
     { "key": "storageInspectionId", "value": "" },
-    { "key": "pennStateForageId", "value": "" }
+    { "key": "pennStateForageId", "value": "" },
+    { "key": "granulometryId", "value": "" }
   ]
 }
