@@ -68,7 +68,6 @@ async def update_farm(entry_id: str, user_email: str, updates: FarmUpdate) -> Fa
 from project.api.models.feed_dry_matter import FeedDryMatter
 from project.api.models.manure_score import ManureScore
 from project.api.models.diet_cost import DietCost
-from project.api.models.penn_state import PennState
 
 
 async def delete_farm(entry_id: str, user_email: str) -> dict:
@@ -93,10 +92,7 @@ async def delete_farm(entry_id: str, user_email: str) -> dict:
         await DietCost.find(DietCost.farm_id == entry_id).delete()
     except Exception:
         pass
-    try:
-        await PennState.find(PennState.farm_id == entry_id).delete()
-    except Exception:
-        pass
+    # Legacy PennState (percentage-based) removed from the project; nothing to delete here anymore
 
     await doc.delete()
     return {"msg": "Farm and related data deleted"}

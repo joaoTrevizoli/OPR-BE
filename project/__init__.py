@@ -5,8 +5,8 @@ from project.api.v1.feed_dry_matter import feed_dry_matter
 from project.api.v1.farm import farm
 from project.api.v1.manure_score import manure_score
 from project.api.v1.diet_cost import diet_cost
-from project.api.v1.penn_state import penn_state
 from project.api.v1.penn_state_diet import penn_state_diet
+from project.api.v1.penn_state_forage import penn_state_forage
 from project.api.v1.scale import scale
 from project.api.v1.environment import environment
 from project.api.v1.factory import factory
@@ -24,8 +24,8 @@ def register_blueprint(app: FastAPI):
     app.include_router(farm.router)
     app.include_router(manure_score.router)
     app.include_router(diet_cost.router)
-    app.include_router(penn_state.router)
     app.include_router(penn_state_diet.router)
+    app.include_router(penn_state_forage.router)
     app.include_router(scale.router)
     app.include_router(environment.router)
     app.include_router(factory.router)

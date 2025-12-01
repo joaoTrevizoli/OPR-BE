@@ -471,18 +471,18 @@
       ]
     },
     {
-      "name": "Penn State",
+      "name": "Penn State Forage",
       "item": [
         {
-          "name": "Create Penn State",
+          "name": "Create Penn State Forage",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('pennStateId', json.id); } } catch(e) {}",
-                  "pm.test('Stored pennStateId', function () { pm.expect(pm.collectionVariables.get('pennStateId')).to.be.a('string'); });"
+                  "try { const json = pm.response.json(); if (json && json.id) { pm.collectionVariables.set('pennStateForageId', json.id); } } catch(e) {}",
+                  "pm.test('Stored pennStateForageId', function () { pm.expect(pm.collectionVariables.get('pennStateForageId')).to.be.a('string'); });"
                 ]
               }
             }
@@ -490,33 +490,33 @@
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{url}}/v1/penn-state/", "host": ["{{url}}"], "path": ["v1", "penn-state", ""] },
+            "url": { "raw": "{{url}}/v1/penn-state-forage/", "host": ["{{url}}"], "path": ["v1", "penn-state-forage", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-08-11\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"pct_19mm\": 10.5,\n  \"pct_8mm\": 30.0,\n  \"pct_3_8mm\": 45.0,\n  \"pct_fines\": 14.5\n}"
+              "raw": "{\n  \"date\": \"2024-10-22\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"BAGAÇO DE CANA\",\n  \"count_19mm\": 79,\n  \"count_8mm\": 91,\n  \"count_1_18mm\": 5,\n  \"count_bottom\": 109,\n  \"fdn_bromate_pct\": 68.5\n}"
             }
           }
         },
         {
-          "name": "List Penn State (by farm)",
-          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "penn-state"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
+          "name": "List Penn State Forage (by farm)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state-forage?farm_id={{farmId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-forage"], "query": [ { "key": "farm_id", "value": "{{farmId}}" } ] } }
         },
         {
-          "name": "Get Penn State by ID",
-          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state/{{pennStateId}}", "host": ["{{url}}"], "path": ["v1", "penn-state", "{{pennStateId}}"] } }
+          "name": "Get Penn State Forage by ID",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{url}}/v1/penn-state-forage/{{pennStateForageId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-forage", "{{pennStateForageId}}"] } }
         },
         {
-          "name": "Update Penn State",
+          "name": "Update Penn State Forage",
           "request": {
             "method": "PUT",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{url}}/v1/penn-state/{{pennStateId}}", "host": ["{{url}}"], "path": ["v1", "penn-state", "{{pennStateId}}"] },
-            "body": { "mode": "raw", "raw": "{\n  \"pct_8mm\": 32.5\n}" }
+            "url": { "raw": "{{url}}/v1/penn-state-forage/{{pennStateForageId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-forage", "{{pennStateForageId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"unit\": \"CAUA\",\n  \"diet\": \"BAGAÇO DE CANA\",\n  \"count_19mm\": 79,\n  \"count_8mm\": 91,\n  \"count_1_18mm\": 5,\n  \"count_bottom\": 109,\n  \"fdn_bromate_pct\": 68.5\n}" }
           }
         },
         {
-          "name": "Delete Penn State",
-          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/penn-state/{{pennStateId}}", "host": ["{{url}}"], "path": ["v1", "penn-state", "{{pennStateId}}"] } }
+          "name": "Delete Penn State Forage",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{url}}/v1/penn-state-forage/{{pennStateForageId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-forage", "{{pennStateForageId}}"] } }
         }
       ]
     }
@@ -851,6 +851,7 @@
     { "key": "adminEmail", "value": "user@example.com" },
     { "key": "factoryId", "value": "" },
     { "key": "troughScoreId", "value": "" },
-    { "key": "storageInspectionId", "value": "" }
+    { "key": "storageInspectionId", "value": "" },
+    { "key": "pennStateForageId", "value": "" }
   ]
 }
