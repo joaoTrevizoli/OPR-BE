@@ -11,6 +11,7 @@ class PennStateDietBase(BaseModel):
     unit: str = Field(..., description="Production unit identifier")
     farm_id: str = Field(..., description="Associated Farm ID")
     diet: Optional[str] = Field(default=None, description="Diet name/category")
+    sample: Optional[str] = Field(default=None, description="Optional sample name/label")
 
     # Inputs: counts for each sieve and bottom
     count_19mm: Optional[int] = Field(default=0, ge=0)
@@ -69,6 +70,7 @@ class PennStateDietCreate(PennStateDietBase):
 class PennStateDietUpdate(BaseModel):
     unit: Optional[str] = None
     diet: Optional[str] = None
+    sample: Optional[str] = None
     count_19mm: Optional[int] = Field(default=None, ge=0)
     count_8mm: Optional[int] = Field(default=None, ge=0)
     count_1_18mm: Optional[int] = Field(default=None, ge=0)

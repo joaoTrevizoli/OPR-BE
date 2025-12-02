@@ -25,6 +25,7 @@ class PennStateDiet(Document):
     unit: str = Field(..., description="Production unit identifier (e.g., CAUA)")
     farm_id: str = Field(..., description="Associated Farm (property) ID")
     diet: Optional[str] = Field(default=None, description="Diet name/category")
+    sample: Optional[str] = Field(default=None, description="Optional sample name/label")
 
     # Raw inputs: counts from each sieve
     count_19mm: int = Field(default=0, ge=0, description="Count retained at 19 mm sieve")
@@ -64,6 +65,7 @@ class PennStateDiet(Document):
                 "unit": "CAUA",
                 "farm_id": "683d1238fded441a09bdd6f0",
                 "diet": "ADAPTATION",
+                "sample": "SAMPLE A",
                 # inputs (counts)
                 "count_19mm": 8,
                 "count_8mm": 17,

@@ -595,7 +595,7 @@
             "url": { "raw": "{{url}}/v1/penn-state-diet/", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-10-22\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"count_19mm\": 40,\n  \"count_8mm\": 295,\n  \"count_1_18mm\": 25,\n  \"count_bottom\": 431,\n  \"fdn_bromate_pct\": 68.5\n}"
+              "raw": "{\n  \"date\": \"2024-10-22\",\n  \"unit\": \"CAUA\",\n  \"farm_id\": \"{{farmId}}\",\n  \"diet\": \"ADAPTATION\",\n  \"sample\": \"SAMPLE A\",\n  \"count_19mm\": 40,\n  \"count_8mm\": 295,\n  \"count_1_18mm\": 25,\n  \"count_bottom\": 431,\n  \"fdn_bromate_pct\": 68.5\n}"
             }
           }
         },
@@ -613,7 +613,7 @@
             "method": "PUT",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{url}}/v1/penn-state-diet/{{pennStateDietId}}", "host": ["{{url}}"], "path": ["v1", "penn-state-diet", "{{pennStateDietId}}"] },
-            "body": { "mode": "raw", "raw": "{\n  \"unit\": \"CAUA\",\n  \"diet\": \"ADAPTATION\",\n  \"count_19mm\": 40,\n  \"count_8mm\": 295,\n  \"count_1_18mm\": 25,\n  \"count_bottom\": 431,\n  \"fdn_bromate_pct\": 68.5\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"unit\": \"CAUA\",\n  \"diet\": \"ADAPTATION\",\n  \"sample\": \"SAMPLE B\",\n  \"count_19mm\": 40,\n  \"count_8mm\": 295,\n  \"count_1_18mm\": 25,\n  \"count_bottom\": 431,\n  \"fdn_bromate_pct\": 68.5\n}" }
           }
         },
         {
